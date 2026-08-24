@@ -15,7 +15,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.math.BigDecimal;
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -41,16 +41,32 @@ class RewardControllerTest {
                 .andExpect(jsonPath("$[0].customerName").value("Alice Nguyen"))
                 .andExpect(jsonPath("$[0].totalPoints").value(115))
                 .andExpect(jsonPath("$[0].monthlyRewards").isArray())
-                .andExpect(jsonPath("$[0].monthlyRewards[0].transactionIds").isArray());
+                .andExpect(jsonPath("$[0].monthlyRewards[0].points").value(115))
+                .andExpect(jsonPath("$[0].monthlyRewards[0].transactionIds").isArray())
+                .andExpect(jsonPath("$[0].monthlyRewards[0].transactionIds[0].transactionId").value(110));
 
     }
 
     @Test
-    void getRewards_invalidStartDateThrowsException() throws Exception {
-        given(rewardService.getRewardSummaries(any(), any()))
+    void exception_invalidStartDateThrowsException() throws Exception {
+        given(rewardService.getRewardSummaries(eq("2026-06-09"), isNull()))
                 .willThrow(new DateRangeException("Both start date and end date must be provided together or both must be null."));
         mockMvc.perform(get("/v1/calculateRewards?startDate=2026-06-09"))
                 .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.details").value("Both start date and end date must be provided together or both must be null."))
+                .andExpect(jsonPath("$.statusCode").exists());
+
+
+    }
+
+    @Test
+    void exception_withProvidedWithProvidedEndDateOnly() throws Exception {
+        given(rewardService.getRewardSummaries(isNull(), eq("2026-06-09")))
+                .willThrow(new DateRangeException("Both start date and end date must be provided together or both must be null."));
+
+        mockMvc.perform(get("/v1/calculateRewards?endDate=2026-06-09"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.details").exists())
                 .andExpect(jsonPath("$.details").value("Both start date and end date must be provided together or both must be null."))
                 .andExpect(jsonPath("$.statusCode").exists());
 
@@ -59,7 +75,7 @@ class RewardControllerTest {
     @Test
     void getRewards_withValidDateRange() throws Exception {
         CustomerRewardSummary alice = sampleSummary();
-        given(rewardService.getRewardSummaries(any(), any()))
+        given(rewardService.getRewardSummaries(eq("2026-06-09"), eq("2026-08-09")))
                 .willReturn(List.of(alice));
         mockMvc.perform(get("/v1/calculateRewards?startDate=2026-06-09&endDate=2026-08-09"))
                 .andExpect(status().isOk())
@@ -67,14 +83,16 @@ class RewardControllerTest {
                 .andExpect(jsonPath("$[0].customerName").value("Alice Nguyen"))
                 .andExpect(jsonPath("$[0].totalPoints").value(115))
                 .andExpect(jsonPath("$[0].monthlyRewards").isArray())
-                .andExpect(jsonPath("$[0].monthlyRewards[0].transactionIds").isArray());
+                .andExpect(jsonPath("$[0].monthlyRewards[0].points").value(115))
+                .andExpect(jsonPath("$[0].monthlyRewards[0].transactionIds").isArray())
+                .andExpect(jsonPath("$[0].monthlyRewards[0].transactionIds[0].transactionId").value(110));
 
 
     }
 
     @Test
-    void getRewards_invalidDateFormatThrowsException() throws Exception {
-        given(rewardService.getRewardSummaries(any(), any()))
+    void exception_invalidDateFormatThrowsException() throws Exception {
+        given(rewardService.getRewardSummaries(eq("09-08-2026"), eq("09-09-2026")))
                 .willThrow(new InvalidDateFormatException("startDate", "09-08-2026"));
         mockMvc.perform(get("/v1/calculateRewards?startDate=09-08-2026&endDate=09-09-2026"))
                 .andExpect(status().isBadRequest())
@@ -84,19 +102,39 @@ class RewardControllerTest {
     }
 
     @Test
-    void getRewards_withStartDateGreaterThanEndDate() throws Exception {
-        given(rewardService.getRewardSummaries(any(), any()))
+    void exception_withStartDateGreaterThanEndDate() throws Exception {
+        given(rewardService.getRewardSummaries(eq("2026-10-09"), eq("2026-08-08")))
                 .willThrow(new DateRangeException("Start date must be before or equal to end date."));
-        mockMvc.perform(get("/v1/calculateRewards?startDate=09-09-2026&endDate=09-08-2026"))
+        mockMvc.perform(get("/v1/calculateRewards?startDate=2026-10-09&endDate=2026-08-08"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.details").value("Start date must be before or equal to end date."))
                 .andExpect(jsonPath("$.statusCode").exists());
 
     }
 
+    @Test
+    void exception_withStartDateGreaterThanOneYear() throws Exception {
+        given(rewardService.getRewardSummaries(eq("2024-12-09"), eq("2026-08-08")))
+                .willThrow(new DateRangeException("Start date cannot be more than one year in the past."));
+        mockMvc.perform(get("/v1/calculateRewards?startDate=2024-12-09&endDate=2026-08-08"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.details").value("Start date cannot be more than one year in the past."))
+                .andExpect(jsonPath("$.statusCode").exists());
+    }
+
+    @Test
+    void exception_withStartDateGreaterThanThreeMonths() throws Exception {
+        given(rewardService.getRewardSummaries(eq("2025-12-09"), eq("2026-08-08")))
+                .willThrow(new DateRangeException("Date range cannot exceed three months."));
+        mockMvc.perform(get("/v1/calculateRewards?startDate=2025-12-09&endDate=2026-08-08"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.details").value("Date range cannot exceed three months."))
+                .andExpect(jsonPath("$.statusCode").exists());
+    }
+
 
     private static CustomerRewardSummary sampleSummary() {
-        MonthlyReward april = new MonthlyReward(2026, "AUG", 115, List.of(new MonthlyTransaction("110",new BigDecimal(100))));
+        MonthlyReward april = new MonthlyReward(2026, "AUG", 115, List.of(new MonthlyTransaction("110", new BigDecimal(100))));
         return new CustomerRewardSummary("C001", "Alice Nguyen", List.of(april), 115);
     }
 

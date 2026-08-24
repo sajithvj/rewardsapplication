@@ -9,7 +9,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.time.LocalDate;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 @SpringBootTest
 public class DateParameterParserTest {
 
@@ -39,12 +43,9 @@ public class DateParameterParserTest {
         InvalidDateFormatException exception = assertThrows(InvalidDateFormatException.class, () ->
                 DateParameterParser.parse("testParam", invalidInput)
         );
-
-
         assertTrue(exception.getMessage().contains("Invalid value for parameter"));
         assertTrue(exception.getMessage().contains("testParam"));
-        assertTrue(exception.getMessage().contains( invalidInput));
-;
+        assertTrue(exception.getMessage().contains(invalidInput));
     }
 
 

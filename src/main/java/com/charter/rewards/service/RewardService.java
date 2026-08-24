@@ -15,7 +15,11 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.YearMonth;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,11 +29,12 @@ public class RewardService {
     private static final BigDecimal TIER_1_THRESHOLD = new BigDecimal("50");
 
     private final TransactionRepository transactionRepository;
+
     private final DateRangeValidator dateRangeValidator;
 
-    public RewardService(TransactionRepository transactionRepository,DateRangeValidator dateRangeValidator) {
+    public RewardService(TransactionRepository transactionRepository, DateRangeValidator dateRangeValidator) {
         this.transactionRepository = transactionRepository;
-        this.dateRangeValidator=dateRangeValidator;
+        this.dateRangeValidator = dateRangeValidator;
     }
 
     /**
@@ -46,22 +51,11 @@ public class RewardService {
             return 0;
         }
 
-        BigDecimal remaining = amount.setScale(0,RoundingMode.FLOOR); // Truncate fractional dollars
+        BigDecimal normalizedAmount = amount.setScale(0, RoundingMode.FLOOR);
         BigDecimal points = BigDecimal.ZERO;
-
-        if (remaining.compareTo(TIER_2_THRESHOLD) > 0) {
-
-            BigDecimal overHundred = remaining.subtract(TIER_2_THRESHOLD);
-            points = points.add(overHundred.multiply(BigDecimal.valueOf(2)));
-            remaining = TIER_2_THRESHOLD;
-        }
-
-        if (remaining.compareTo(TIER_1_THRESHOLD) > 0) {
-            BigDecimal applicableAmount = remaining.min(TIER_2_THRESHOLD);
-            BigDecimal fiftyToHundred = applicableAmount.subtract(TIER_1_THRESHOLD); // 1 point per dollar over $50 up to $100
-            points = points.add(fiftyToHundred);
-        }
-
+        points = points.add(normalizedAmount.subtract(TIER_2_THRESHOLD).max(BigDecimal.ZERO).multiply(BigDecimal.valueOf(2)));
+        BigDecimal fiftyToHundred = normalizedAmount.min(TIER_2_THRESHOLD).subtract(TIER_1_THRESHOLD).max(BigDecimal.ZERO);
+        points = points.add(fiftyToHundred);
         return points.intValue();
     }
 
@@ -72,8 +66,9 @@ public class RewardService {
 
     public List<CustomerRewardSummary> getRewardSummaries(String startDateStr, String endDateStr) {
 
-        DateRange dateRange = dateRangeValidator.validateDateRange(startDateStr,endDateStr);
-        Map<String, List<Transaction>> byCustomer = transactionRepository.findByTransactionDateBetween(dateRange.startDate(), dateRange.endDate()).stream()
+        DateRange dateRange = dateRangeValidator.validateDateRange(startDateStr, endDateStr);
+
+        Map<String, List<Transaction>> byCustomer = transactionRepository.findByTransactionDateBetween(dateRange.startDate(), dateRange.endDate()).stream().map(Transaction::fromEntity)
                 .collect(Collectors.groupingBy(Transaction::customerId));
         List<CustomerRewardSummary> summaries = byCustomer.entrySet().stream()
                 .map(entry -> buildSummary(entry.getKey(), entry.getValue()))
@@ -94,14 +89,13 @@ public class RewardService {
         Map<YearMonth, Integer> pointsByMonth = new TreeMap<>();
         Map<YearMonth, List<MonthlyTransaction>> transactionByMonth = new TreeMap<>();
 
-        customerTransactions.forEach(t->{
-            YearMonth month=YearMonth.from(t.transactionDate());
-            int points =calculatePoints(t.amount());
-            pointsByMonth.merge(month,points,Integer::sum);
-            MonthlyTransaction monthlyTransaction= new MonthlyTransaction(t.transactionId(),t.amount());
-            transactionByMonth.computeIfAbsent(month,k-> new ArrayList<>()).add(monthlyTransaction);
+        customerTransactions.forEach(t -> {
+            YearMonth month = YearMonth.from(t.transactionDate());
+            int points = calculatePoints(t.amount());
+            pointsByMonth.merge(month, points, Integer::sum);
+            MonthlyTransaction monthlyTransaction = new MonthlyTransaction(t.transactionId(), t.amount());
+            transactionByMonth.computeIfAbsent(month, k -> new ArrayList<>()).add(monthlyTransaction);
         });
-
 
 
         List<MonthlyReward> monthlyRewards = pointsByMonth.entrySet().stream()

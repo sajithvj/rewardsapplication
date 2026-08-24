@@ -17,4 +17,19 @@ public record Transaction(String transactionId, String customerId, String custom
         this.amount = Objects.requireNonNull(amount, "amount is required");
         this.transactionDate = Objects.requireNonNull(transactionDate, "transactionDate is required");
     }
+
+    /**
+     * Maps the entity to Transaction record
+     * @param entity
+     * @return Transaction
+     */
+    public static Transaction fromEntity(TransactionEntity entity) {
+        return new Transaction(
+                entity.getTransactionId(),
+                entity.getCustomerId(),
+                entity.getCustomerName(),
+                entity.getAmount(),
+                entity.getTransactionDate()
+        );
+    }
 }

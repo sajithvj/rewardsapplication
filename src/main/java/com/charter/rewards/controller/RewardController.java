@@ -24,7 +24,7 @@ public class RewardController {
     }
 
     /**
-     * GET /vi/calculateRewards
+     * GET /v1/calculateRewards
      * Returns, for every customer on record, reward points earned per
      * month plus the total across the whole period.
      */
