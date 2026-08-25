@@ -12,7 +12,7 @@ import java.util.List;
  *  `TransactionRepository` (a `JpaRepository`) handles queries.
  */
 @Repository
-public interface TransactionRepository extends JpaRepository<TransactionEntity, Long> {
+public interface TransactionRepository extends JpaRepository<TransactionEntity, String> {
 
     /**
      *
