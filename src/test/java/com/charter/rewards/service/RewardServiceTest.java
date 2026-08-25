@@ -92,7 +92,7 @@ class RewardServiceTest {
 
     }
 
-    //
+
     @Test
     void customerWithOnlySmallPurchases_hasZeroTotalPoints() throws ExecutionException, InterruptedException {
         LocalDate startDate = LocalDate.now().minusMonths(3);
@@ -168,7 +168,7 @@ class RewardServiceTest {
     }
 
     @Test
-    void summmaries_CustomeNotFoundExceptionForInvalidDateRange() {
+    void summaries_CustomerNotFoundExceptionForInvalidDateRange() {
         LocalDate startDate = LocalDate.now().minusMonths(6);
         LocalDate endDate = LocalDate.now().minusMonths(4);
 
