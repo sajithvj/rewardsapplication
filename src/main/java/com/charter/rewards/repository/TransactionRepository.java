@@ -20,7 +20,6 @@ public interface TransactionRepository extends JpaRepository<TransactionEntity, 
      * @param endDate
      * @return {@link List}
      */
-    @Query(nativeQuery = true)
     List<TransactionEntity> findByTransactionDateBetween(LocalDate startDate, LocalDate endDate);
 
 
