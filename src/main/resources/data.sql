@@ -14,4 +14,5 @@ INSERT INTO transaction (transaction_id, customer_id, customer_name, amount, tra
 ('T00011','C004', 'David John',30.00, '2026-06-09'),
 ('T00012','C004', 'David John',49.99, '2026-06-30'),
 ('T00013','C005', 'Nirmal Xavier', 120.00, '2026-06-09'),
-('T00014','C005', 'Nirmal Xavier', 60.00, '2026-07-09');
+('T00014','C005', 'Nirmal Xavier', 60.00, '2026-07-09'),
+('T00015','C005', 'Nirmal Xavier', 52.00, '2026-08-09');
