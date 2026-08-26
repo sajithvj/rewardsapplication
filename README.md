@@ -347,7 +347,7 @@ Returns an error because the start date is after the end date:
   "timestamp": "2026-08-12T22:38:59.1651701"
 }
 ```
-### Test Case 7: Execution for star date is more than one year in the past.
+### Test Case 7: Execution for start date is more than one year in the past.
 ```bash
 curl http://localhost:8080/v1/calculateRewards?startDate=2025-02-09&endDate=2026-08-07
 ```
