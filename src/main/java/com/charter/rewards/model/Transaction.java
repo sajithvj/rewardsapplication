@@ -20,6 +20,7 @@ public record Transaction(String transactionId, String customerId, String custom
 
     /**
      * Maps the entity to Transaction record
+     *
      * @param entity
      * @return Transaction
      */

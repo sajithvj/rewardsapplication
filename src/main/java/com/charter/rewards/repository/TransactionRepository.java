@@ -9,7 +9,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 /**
- *  `TransactionRepository` (a `JpaRepository`) handles queries.
+ * `TransactionRepository` (a `JpaRepository`) handles queries.
  */
 @Repository
 public interface TransactionRepository extends JpaRepository<TransactionEntity, String> {

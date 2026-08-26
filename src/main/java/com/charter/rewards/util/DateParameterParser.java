@@ -25,7 +25,7 @@ public class DateParameterParser {
         try {
             return LocalDate.parse(rawValue.trim());
         } catch (DateTimeParseException e) {
-            throw new InvalidDateFormatException(paramName ,rawValue);
+            throw new InvalidDateFormatException(paramName, rawValue);
         }
     }
 

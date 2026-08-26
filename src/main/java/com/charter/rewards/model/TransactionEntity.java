@@ -11,7 +11,7 @@ import java.time.LocalDate;
 import java.util.Objects;
 
 /**
- *  Data JPA — `TransactionEntity` maps to the `TRANSACTION` table
+ * Data JPA — `TransactionEntity` maps to the `TRANSACTION` table
  */
 @Entity
 @Table(name = "transaction")
