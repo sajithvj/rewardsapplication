@@ -54,8 +54,7 @@ public class RewardService {
         BigDecimal normalizedAmount = amount.setScale(0, RoundingMode.FLOOR);
         BigDecimal points = BigDecimal.ZERO;
         points = points.add(normalizedAmount.subtract(TIER_2_THRESHOLD).max(BigDecimal.ZERO).multiply(BigDecimal.valueOf(2)));
-        BigDecimal fiftyToHundred = normalizedAmount.min(TIER_2_THRESHOLD).subtract(TIER_1_THRESHOLD).max(BigDecimal.ZERO);
-        points = points.add(fiftyToHundred);
+        points = points.add(normalizedAmount.min(TIER_2_THRESHOLD).subtract(TIER_1_THRESHOLD).max(BigDecimal.ZERO));
         return points.intValue();
     }
 
