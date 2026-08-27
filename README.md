@@ -444,5 +444,15 @@ curl http://localhost:8080/actuator/prometheus
   production database (Postgres, MySQL, etc.) would only require
   changing the datasource configuration — the entity and repository
   layer stay the same.
-- Aggregation groups by customer, then by `YearMonth`, using a
-  `TreeMap` to keep months in chronological order in the response.
+- Aggregation groups by customer, then by `YearMonth`. The grouping is
+  two levels: an outer `customerId -> ...` map, and a `TreeMap<YearMonth, ...>`
+  per customer. Only the inner map is a `TreeMap` — it's what keeps each
+  customer's months in chronological order in the response without a
+  separate sort step, since `YearMonth` is naturally `Comparable`. The
+  outer map does not guarantee ordering; if a deterministic customer order
+  is desired (e.g. for stable test assertions), swap it for a
+  `LinkedHashMap` or a `TreeMap` keyed on `customerId`.
+- Within a month, each transaction's `(transactionId, amount)` pair is
+  kept in a `List`, not a map — there's no key worth grouping transactions
+  by within a month, so a list preserving insertion order is simplest and
+  maps directly to the JSON array in the response.
