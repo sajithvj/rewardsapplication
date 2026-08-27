@@ -7,7 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class RewardsApplications {
 
-    public static void main(String[] args) {
-        SpringApplication.run(RewardsApplications.class, args);
-    }
+  public static void main(String[] args) {
+    SpringApplication.run(RewardsApplications.class, args);
+  }
 }

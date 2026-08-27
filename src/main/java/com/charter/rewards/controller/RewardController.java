@@ -16,23 +16,25 @@ import java.util.List;
 
 public class RewardController {
 
-    private final RewardService rewardService;
+  private final RewardService rewardService;
 
 
-    public RewardController(RewardService rewardService) {
-        this.rewardService = rewardService;
-    }
+  public RewardController(RewardService rewardService) {
+    this.rewardService = rewardService;
+  }
 
-    /**
-     * GET /v1/calculateRewards
-     * Returns, for every customer on record, reward points earned per
-     * month plus the total across the whole period.
-     */
-    @GetMapping("/calculateRewards")
-    public ResponseEntity<List<CustomerRewardSummary>> getRewards(@RequestParam(required = false, name = "startDate") String startDateStr, @RequestParam(required = false, name = "endDate") String endDateStr) {
+  /**
+   * GET /v1/calculateRewards Returns, for every customer on record, reward points earned per month
+   * plus the total across the whole period.
+   */
+  @GetMapping("/calculateRewards")
+  public ResponseEntity<List<CustomerRewardSummary>> getRewards(
+      @RequestParam(required = false, name = "startDate") String startDateStr,
+      @RequestParam(required = false, name = "endDate") String endDateStr) {
 
-        return new ResponseEntity<>(rewardService.getRewardSummaries(startDateStr, endDateStr), HttpStatus.OK);
-    }
+    return new ResponseEntity<>(rewardService.getRewardSummaries(startDateStr, endDateStr),
+        HttpStatus.OK);
+  }
 
 
 }

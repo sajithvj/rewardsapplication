@@ -14,13 +14,13 @@ import java.util.List;
 @Repository
 public interface TransactionRepository extends JpaRepository<TransactionEntity, String> {
 
-    /**
-     *
-     * @param startDate
-     * @param endDate
-     * @return {@link List}
-     */
-    List<TransactionEntity> findByTransactionDateBetween(LocalDate startDate, LocalDate endDate);
+  /**
+   *
+   * @param startDate
+   * @param endDate
+   * @return {@link List}
+   */
+  List<TransactionEntity> findByTransactionDateBetween(LocalDate startDate, LocalDate endDate);
 
 
 }
