@@ -6,12 +6,17 @@ Calculates customer reward points from retail transactions.
 
 - 2 points for every dollar spent **over $100** in a transaction
 - 1 point for every dollar spent **between $50 and $100** in a transaction
+- **Transaction amounts are truncated to whole dollars before points are
+  calculated** — cents are dropped, not rounded. (e.g. `$150.75` is treated
+  as `$150` for the purposes of the point calculation.)
 - Example: a $120 purchase = 2×$20 + 1×$50 = **90 points**
     - a $50 purchase = 0 points
     - a $75 purchase = 25 points
     - a $200 purchase = 2×$100 + 1×$50 = 250 points
     - a $51 purchase = 1 point
     - a $100 purchase = 50 points
+    - a $150.75 purchase → truncated to $150 = 2×$50 + 1×$50 = **150 points**
+  
 ### 1. Prerequisites
 * **Java:** JDK 17 or higher
 * **Build Tool:** Apache Maven 3.8+
@@ -425,9 +430,13 @@ curl http://localhost:8080/actuator/prometheus
 
 - **`RewardService.calculatePoints`** is a small pure function — easy to
   unit test in isolation from HTTP/aggregation concerns.
-- **`BigDecimal`** is used throughout for money instead of `double`, to
-  avoid floating-point rounding errors on currency and to keep decimal
-  precision accurate.
+- **`BigDecimal`** is used throughout for money to avoid floating-point
+  representation errors and to keep currency values exact through storage,
+  retrieval, and aggregation. Note that this precision applies to how
+  amounts are *stored and summed* — the points formula itself intentionally
+  truncates each transaction to a whole-dollar amount before scoring it (see
+  Rules above), the same way most real-world cents-are-dropped rewards
+  programs work.
 - Transactions are persisted in an **H2 in-memory database** via Spring
   Data JPA — `TransactionEntity` maps to the `TRANSACTION` table, and
   `TransactionRepository` (a `JpaRepository`) handles queries. Sample
