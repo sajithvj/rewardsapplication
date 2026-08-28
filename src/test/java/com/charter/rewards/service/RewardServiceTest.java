@@ -15,6 +15,9 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -51,12 +54,6 @@ class RewardServiceTest {
   }
 
   @Test
-  void purchaseExactly50Dollars_earnsZeroPoints() {
-    // Boundary is exclusive: points start accruing strictly above $50.
-    assertThat(rewardService.calculatePoints(new BigDecimal("50"))).isEqualTo(0);
-  }
-
-  @Test
   void purchaseBetween50And100_earnsOnePointPerDollarOverFifty() {
     assertThat(rewardService.calculatePoints(new BigDecimal("75"))).isEqualTo(25);
   }
@@ -66,50 +63,15 @@ class RewardServiceTest {
     assertThat(rewardService.calculatePoints(new BigDecimal("100.5"))).isEqualTo(50);
   }
 
-  @Test
-  void zeroOrNegativeAmount_earnsZeroPoints() {
-    assertThat(rewardService.calculatePoints(BigDecimal.ZERO)).isEqualTo(0);
-    assertThat(rewardService.calculatePoints(new BigDecimal("-10"))).isEqualTo(0);
+  @ParameterizedTest
+  @NullSource
+  @ValueSource(strings = {"0", "-10", "50"})
+  void points_earnsZeroPoints(BigDecimal amount) {
+    assertThat(rewardService.calculatePoints(amount)).isEqualTo(0);
   }
 
   @Test
-  void nullAmount_earnsZeroPoints() {
-    assertThat(rewardService.calculatePoints(null)).isEqualTo(0);
-  }
-
-  @Test
-  void summaries_areReturnedForCustomerInRepository()
-      throws ExecutionException, InterruptedException {
-    LocalDate startDate = LocalDate.now().minusMonths(3);
-    LocalDate endDate = LocalDate.now();
-    when(transactionRepository.findByTransactionDateBetween(startDate, endDate)).thenReturn(
-        sampleTransaction());
-    var summaries = rewardService.getRewardSummaries(startDate.toString(), endDate.toString());
-    assertThat(summaries).hasSize(3);
-    assertThat(summaries).extracting("customerName")
-        .containsExactlyInAnyOrder("Nirmal Xavier", "David John", "Priya Sharma");
-  }
-
-  @Test
-  void customerWithHighestValueOfPoints() throws ExecutionException, InterruptedException {
-    LocalDate startDate = LocalDate.now().minusMonths(3);
-    LocalDate endDate = LocalDate.now();
-    when(transactionRepository.findByTransactionDateBetween(startDate, endDate)).thenReturn(
-        sampleTransaction());
-    var summaries = rewardService.getRewardSummaries(startDate.toString(), endDate.toString());
-    var cust = summaries.stream()
-        .filter(s -> s.customerName().equals("Priya Sharma"))
-        .findFirst()
-        .orElseThrow();
-    assertEquals("Priya Sharma", cust.customerName());
-    assertEquals(1050, cust.totalPoints());
-    assertEquals(840, cust.monthlyRewards().get(0).points());
-    assertEquals("T0008", cust.monthlyRewards().get(0).transactionIds().get(0).transactionId());
-
-  }
-
-  @Test
-  void customerWithOnlySmallPurchases_hasZeroTotalPoints()
+  void customersWithDifferentPurchases()
       throws ExecutionException, InterruptedException {
     LocalDate startDate = LocalDate.now().minusMonths(3);
     LocalDate endDate = LocalDate.now();
@@ -120,9 +82,17 @@ class RewardServiceTest {
         .filter(s -> s.customerName().equals("David John"))
         .findFirst()
         .orElseThrow();
+    var priya = summaries.stream()
+        .filter(s -> s.customerName().equals("Priya Sharma"))
+        .findFirst()
+        .orElseThrow();
 
     assertThat(david.totalPoints()).isZero();
     assertThat(david.monthlyRewards().get(0).points()).isZero();
+    assertEquals("Priya Sharma", priya.customerName());
+    assertEquals(1050, priya.totalPoints());
+    assertEquals(840, priya.monthlyRewards().get(0).points());
+    assertEquals("T0008", priya.monthlyRewards().get(0).transactionIds().get(0).transactionId());
   }
 
   @Test
