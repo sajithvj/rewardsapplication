@@ -8,19 +8,18 @@ import com.charter.rewards.model.Transaction;
 import com.charter.rewards.repository.TransactionRepository;
 import com.charter.rewards.validation.DateRange;
 import com.charter.rewards.validation.DateRangeValidator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.YearMonth;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
 @Service
 public class RewardService {

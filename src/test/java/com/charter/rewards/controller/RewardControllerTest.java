@@ -1,5 +1,13 @@
 package com.charter.rewards.controller;
 
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.charter.rewards.dto.CustomerRewardSummary;
 import com.charter.rewards.dto.MonthlyReward;
 import com.charter.rewards.dto.MonthlyTransaction;
@@ -9,22 +17,13 @@ import com.charter.rewards.exception.InvalidDateFormatException;
 import com.charter.rewards.service.RewardService;
 import com.charter.rewards.validation.DateRange;
 import com.charter.rewards.validation.DateRangeValidator;
+import java.math.BigDecimal;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-
-import java.math.BigDecimal;
-import java.util.List;
-
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isNull;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(RewardController.class)
 class RewardControllerTest {
@@ -34,6 +33,12 @@ class RewardControllerTest {
 
   @MockitoBean
   private RewardService rewardService;
+
+  private static CustomerRewardSummary sampleSummary() {
+    MonthlyReward august = new MonthlyReward(2026, "AUG", 115,
+        List.of(new MonthlyTransaction("110", new BigDecimal(100))));
+    return new CustomerRewardSummary("C001", "Alice Nguyen", List.of(august), 115);
+  }
 
   @Test
   void getRewards_routesToServiceAndSerializesSuccessResult() throws Exception {
@@ -154,13 +159,6 @@ class RewardControllerTest {
         .andExpect(jsonPath("$.details").value(
             "No transactions found for the given date range: 2026-01-09 to 2026-02-08"))
         .andExpect(jsonPath("$.statusCode").exists());
-  }
-
-
-  private static CustomerRewardSummary sampleSummary() {
-    MonthlyReward august = new MonthlyReward(2026, "AUG", 115,
-        List.of(new MonthlyTransaction("110", new BigDecimal(100))));
-    return new CustomerRewardSummary("C001", "Alice Nguyen", List.of(august), 115);
   }
 
 }

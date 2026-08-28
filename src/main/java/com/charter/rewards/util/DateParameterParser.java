@@ -2,7 +2,6 @@ package com.charter.rewards.util;
 
 import com.charter.rewards.exception.DateRangeException;
 import com.charter.rewards.exception.InvalidDateFormatException;
-
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 

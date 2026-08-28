@@ -1,12 +1,10 @@
 package com.charter.rewards.repository;
 
 import com.charter.rewards.model.TransactionEntity;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.stereotype.Repository;
-
 import java.time.LocalDate;
 import java.util.List;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 /**
  * `TransactionRepository` (a `JpaRepository`) handles queries.

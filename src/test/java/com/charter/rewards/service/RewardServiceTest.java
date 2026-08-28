@@ -1,24 +1,23 @@
 package com.charter.rewards.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.when;
+
 import com.charter.rewards.dto.MonthlyReward;
 import com.charter.rewards.exception.CustomerNotFoundException;
 import com.charter.rewards.exception.DateRangeException;
 import com.charter.rewards.model.TransactionEntity;
 import com.charter.rewards.repository.TransactionRepository;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.when;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @SpringBootTest
 class RewardServiceTest {
@@ -29,12 +28,27 @@ class RewardServiceTest {
   @Autowired
   RewardService rewardService;
 
+  private static List<TransactionEntity> sampleTransaction() {
+    return List.of(new TransactionEntity("T00014", "C005", "Nirmal Xavier", new BigDecimal("60.00"),
+            LocalDate.of(2026, 7, 9)),
+        new TransactionEntity("T00011", "C004", "David John", new BigDecimal("30.00"),
+            LocalDate.of(2026, 6, 9)),
+        new TransactionEntity("T00012", "C004", "David John", new BigDecimal("49.99"),
+            LocalDate.of(2026, 6, 30)),
+        new TransactionEntity("T0008", "C003", "Priya Sharma", new BigDecimal("310.00"),
+            LocalDate.of(2026, 6, 11)),
+        new TransactionEntity("T0009", "C003", "Priya Sharma", new BigDecimal("260.40"),
+            LocalDate.of(2026, 6, 17)),
+        new TransactionEntity("T00010", "C003", "Priya Sharma", new BigDecimal("180.00"),
+            LocalDate.of(2026, 7, 29))
+
+    );
+  }
 
   @Test
   void exampleFromSpec_120DollarPurchase_earns90Points() {
     assertThat(rewardService.calculatePoints(new BigDecimal("120"))).isEqualTo(90);
   }
-
 
   @Test
   void purchaseExactly50Dollars_earnsZeroPoints() {
@@ -47,12 +61,10 @@ class RewardServiceTest {
     assertThat(rewardService.calculatePoints(new BigDecimal("75"))).isEqualTo(25);
   }
 
-
   @Test
   void purchaseLittleGreater100Dollars_earns50Points() {
     assertThat(rewardService.calculatePoints(new BigDecimal("100.5"))).isEqualTo(50);
   }
-
 
   @Test
   void zeroOrNegativeAmount_earnsZeroPoints() {
@@ -96,7 +108,6 @@ class RewardServiceTest {
 
   }
 
-
   @Test
   void customerWithOnlySmallPurchases_hasZeroTotalPoints()
       throws ExecutionException, InterruptedException {
@@ -129,7 +140,6 @@ class RewardServiceTest {
     });
 
   }
-
 
   @Test
   void getRewardSummaries_throwsWhenStartDateAfterEndDate() {
@@ -183,22 +193,5 @@ class RewardServiceTest {
     assertThrows(CustomerNotFoundException.class,
         () -> rewardService.getRewardSummaries(startDate.toString(), endDate.toString()));
 
-  }
-
-  private static List<TransactionEntity> sampleTransaction() {
-    return List.of(new TransactionEntity("T00014", "C005", "Nirmal Xavier", new BigDecimal("60.00"),
-            LocalDate.of(2026, 7, 9)),
-        new TransactionEntity("T00011", "C004", "David John", new BigDecimal("30.00"),
-            LocalDate.of(2026, 6, 9)),
-        new TransactionEntity("T00012", "C004", "David John", new BigDecimal("49.99"),
-            LocalDate.of(2026, 6, 30)),
-        new TransactionEntity("T0008", "C003", "Priya Sharma", new BigDecimal("310.00"),
-            LocalDate.of(2026, 6, 11)),
-        new TransactionEntity("T0009", "C003", "Priya Sharma", new BigDecimal("260.40"),
-            LocalDate.of(2026, 6, 17)),
-        new TransactionEntity("T00010", "C003", "Priya Sharma", new BigDecimal("180.00"),
-            LocalDate.of(2026, 7, 29))
-
-    );
   }
 }
