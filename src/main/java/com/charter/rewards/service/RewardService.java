@@ -50,14 +50,12 @@ public class RewardService {
     if (amount == null || amount.signum() <= 0) {
       return 0;
     }
-
     BigDecimal normalizedAmount = amount.setScale(0, RoundingMode.FLOOR);
-    BigDecimal points = BigDecimal.ZERO;
-    points = points.add(normalizedAmount.subtract(TIER_2_THRESHOLD).max(BigDecimal.ZERO)
-        .multiply(BigDecimal.valueOf(2)));
-    points = points.add(
-        normalizedAmount.min(TIER_2_THRESHOLD).subtract(TIER_1_THRESHOLD).max(BigDecimal.ZERO));
-    return points.intValue();
+    return (normalizedAmount.subtract(TIER_2_THRESHOLD).max(BigDecimal.ZERO)
+        .multiply(BigDecimal.valueOf(2)).add(
+            normalizedAmount.min(TIER_2_THRESHOLD).subtract(TIER_1_THRESHOLD)
+                .max(BigDecimal.ZERO))).intValue();
+
   }
 
   /**
