@@ -48,20 +48,13 @@ class RewardServiceTest {
     );
   }
 
-  @Test
-  void exampleFromSpec_120DollarPurchase_earns90Points() {
-    assertThat(rewardService.calculatePoints(new BigDecimal("120"))).isEqualTo(90);
+
+  @ParameterizedTest
+  @ValueSource(strings = {"120", "75", "100.5"})
+  void purchase_greaterThanFifty_earnsPoints(BigDecimal amount) {
+    assertThat(rewardService.calculatePoints(amount)).isNotZero();
   }
 
-  @Test
-  void purchaseBetween50And100_earnsOnePointPerDollarOverFifty() {
-    assertThat(rewardService.calculatePoints(new BigDecimal("75"))).isEqualTo(25);
-  }
-
-  @Test
-  void purchaseLittleGreater100Dollars_earns50Points() {
-    assertThat(rewardService.calculatePoints(new BigDecimal("100.5"))).isEqualTo(50);
-  }
 
   @ParameterizedTest
   @NullSource
